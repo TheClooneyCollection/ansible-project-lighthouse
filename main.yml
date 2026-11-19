@@ -39,5 +39,14 @@
     - role: edcr_eddn_listener
       tags: [edcr_eddn_listener]
 
+    - role: tailscale_serve
+      tags: [tailscale_serve_edcr_markets]
+      vars:
+        tailscale_serve_service_name: tailscale-serve-edcr-markets
+        tailscale_serve_description: Private EDControlRoom market snapshots
+        tailscale_serve_backend_url: "{{ edcr_eddn_listener_snapshot_dir }}"
+        tailscale_serve_https_port: "{{ edcr_eddn_listener_snapshot_https_port }}"
+        tailscale_serve_background: true
+
     # Run this manually
     # - ssh_hardening

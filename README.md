@@ -64,6 +64,45 @@ To run only the `initialize` role during development:
 ansible-playbook -i inventory/hosts.yml main.yml --limit debian_lighthouse --tags initialize
 ```
 
+## Private EDControlRoom market snapshots
+
+The `edcr_eddn_listener` role installs an hourly snapshot timer alongside the listener.
+It writes `/var/lib/edcontrolroom/snapshots` as `edcontrolroom` (directory 0755,
+files 0644 with `UMask=0022`) and keeps the newest three gzip snapshots. Override
+`edcr_eddn_listener_snapshot_dir`, `edcr_eddn_listener_snapshot_keep`, or
+`edcr_eddn_listener_snapshot_schedule` in inventory variables as needed.
+Deploy only after EDControlRoom main includes `market_snapshot.py write --keep`.
+The listener now uses shipped defaults without requiring a comment-only `config.toml`;
+any existing config file is left in place.
+
+Apply just the listener/snapshot units and the separate directory-serving instance:
+
+```bash
+ansible-playbook -i inventory/hosts.yml main.yml --limit debian_lighthouse --tags edcr_eddn_listener,tailscale_serve_edcr_markets --check --diff
+ansible-playbook -i inventory/hosts.yml main.yml --limit debian_lighthouse --tags edcr_eddn_listener,tailscale_serve_edcr_markets
+```
+
+This also updates the EDControlRoom checkout/dependencies and may restart its listener.
+Only the snapshot timer is enabled/started; the snapshot service is not explicitly
+started during deployment. `Persistent=true` may catch up a missed scheduled run.
+For the first snapshot, run `sudo systemctl start edcr-market-snapshot.service` on
+the host after deploying. No reboot is required.
+
+The `tailscale_serve_edcr_markets` tag can subsequently apply just directory serving.
+Its port is `edcr_eddn_listener_snapshot_https_port` (default 8443); choose an unused
+port distinct from Umami's 443. The new `tailscale-serve-edcr-markets` unit uses
+`tailscale serve --bg --https=<port> <snapshot_dir>` and stops only its own port.
+The existing Umami unit stays in foreground mode with its existing settings.
+Tailscale must already be authenticated with HTTPS enabled. Directory targets are
+supported by [Tailscale Serve](https://tailscale.com/docs/reference/tailscale-cli/serve).
+No public listener, Funnel, nginx site, or firewall change is added.
+
+Configure the hub privately with `[eddn] snapshot_url` pointing to
+`https://<vps-tailnet-name>:<port>/manifest.json`; keep the actual tailnet name out of
+this repository. Check the URL from a tailnet device and inspect `tailscale serve
+status`, the snapshot timer, file permissions and public listeners on the host.
+These live checks are separate from local syntax/lint validation.
+
 ## Linting & Validation
 Install tooling:
 ```bash

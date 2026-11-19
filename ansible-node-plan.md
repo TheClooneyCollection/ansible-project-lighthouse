@@ -20,6 +20,8 @@
 17. [x] Implement `edcr_eddn_listener` role (EDControlRoom EDDN market listener as an enabled systemd service).
 18. [x] Implement `resolved` role (disable LLMNR and mDNS with a systemd-resolved drop-in; dedicated `resolved` tag).
 
+19. [x] Add hourly EDCR snapshots with retention and a separate tailnet-only directory Serve instance (default HTTPS 8443; dedicated `tailscale_serve_edcr_markets` tag).
+
 ## Plan Overview
 - Build an idempotent Ansible play that provisions a fresh Debian 13 droplet for the blog, proxy, and analytics stack, aligning with the documented migration plan while skipping any migration of existing data.
 - Reuse existing `core`, `deploy_user`, and `ssh_hardening` roles before introducing the new roles that cover firewalling, web proxying, certificate management, and analytics services.
@@ -38,7 +40,7 @@
 - **`docker_compose`**: Configure the Docker apt repository and install Docker Engine components plus the Compose plugin.
 - **`docker_umami`**: Prepare `/opt/umami`, template `.env`, `docker-compose.yml`, optional `postgres.conf`, ensure compose stack running.
 - **`umami_nginx`**: Provide analytics nginx site with restricted dashboard access (configurable subnet/IP allowlist) and public tracking endpoints, enable site, reload service.
-- **`tailscale_serve`**: Deploy and manage a dedicated Tailscale Serve systemd unit that proxies HTTPS traffic to the local Umami instance.
+- **`tailscale_serve`**: Deploy and manage a dedicated Tailscale Serve systemd unit for Umami and a separate private EDCR snapshot directory instance; apply unit changes within each instance to avoid shared handler collisions.
 - **`edcr_eddn_listener`**: Install uv, check out EDControlRoom to `/opt/edcontrolroom`, `uv sync --frozen --no-dev` into `/var/lib/edcontrolroom/venv` as the `edcontrolroom` user, and run `tools/eddn_listen.py` as an enabled, restart-on-failure unit writing `/var/lib/edcontrolroom/markets.sqlite3`.
 - **`backups`**: Deploy Postgres dump script and cron job cleaning old backups.
 

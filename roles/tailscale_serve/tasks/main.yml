@@ -7,13 +7,13 @@
     owner: root
     group: root
     mode: '0644'
-  notify:
-    - Restart tailscale serve
+  register: tailscale_serve_unit
 
 - name: Ensure tailscale serve service is enabled and {{ tailscale_serve_state }}
   become: true
   ansible.builtin.systemd:
     name: "{{ tailscale_serve_service_name }}"
     enabled: "{{ tailscale_serve_enabled }}"
-    state: "{{ tailscale_serve_state }}"
+    # Apply changes in this instance's scope, not a shared deferred handler.
+    state: "{{ 'restarted' if tailscale_serve_unit is changed and tailscale_serve_state == 'started' else tailscale_serve_state }}"
     daemon_reload: true

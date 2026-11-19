@@ -10,3 +10,5 @@ tailscale_serve_wants: [network-online.target]
 tailscale_serve_requires: [tailscaled.service]
 tailscale_serve_state: started
 tailscale_serve_enabled: true
+# Foreground preserves the existing Umami unit; directory serving can use --bg.
+tailscale_serve_background: false

@@ -28,3 +28,9 @@ edcr_eddn_listener_uv_url: >-
 
 edcr_eddn_listener_state: started
 edcr_eddn_listener_enabled: true
+
+# Private market snapshots, served separately over the tailnet.
+edcr_eddn_listener_snapshot_dir: "{{ edcr_eddn_listener_state_dir }}/snapshots"
+edcr_eddn_listener_snapshot_keep: 3
+edcr_eddn_listener_snapshot_schedule: hourly
+edcr_eddn_listener_snapshot_https_port: 8443

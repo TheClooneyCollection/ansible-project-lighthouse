@@ -1,0 +1,21 @@
+# Managed by Ansible
+[Unit]
+Description=Write EDControlRoom market snapshot
+
+[Service]
+Type=oneshot
+User={{ edcr_eddn_listener_user }}
+Group={{ edcr_eddn_listener_group }}
+WorkingDirectory={{ edcr_eddn_listener_checkout }}
+StateDirectory=edcontrolroom
+StateDirectoryMode=0755
+UMask=0022
+Environment=PYTHONUNBUFFERED=1
+Environment=HOME={{ edcr_eddn_listener_state_dir }}
+Environment=UV_PROJECT_ENVIRONMENT={{ edcr_eddn_listener_venv }}
+ExecStart={{ edcr_eddn_listener_uv_bin }} run --no-sync python3 tools/market_snapshot.py write {{ edcr_eddn_listener_db }} {{ edcr_eddn_listener_snapshot_dir }} --keep {{ edcr_eddn_listener_snapshot_keep }}
+ReadWritePaths={{ edcr_eddn_listener_state_dir }} {{ edcr_eddn_listener_snapshot_dir }}
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true

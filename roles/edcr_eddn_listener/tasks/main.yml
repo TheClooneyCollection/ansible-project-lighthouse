@@ -50,15 +50,6 @@
   register: edcr_eddn_listener_checkout_result
   notify: Restart edcr eddn listener
 
-- name: Deploy empty config.toml
-  become: true
-  ansible.builtin.template:
-    src: config.toml.j2
-    dest: "{{ edcr_eddn_listener_checkout }}/config.toml"
-    owner: root
-    group: root
-    mode: '0644'
-
 - name: Check for the listener virtualenv
   ansible.builtin.stat:
     path: "{{ edcr_eddn_listener_venv }}/bin/python"
@@ -95,4 +86,34 @@
     name: "{{ edcr_eddn_listener_service_name }}"
     enabled: "{{ edcr_eddn_listener_enabled }}"
     state: "{{ edcr_eddn_listener_state }}"
+    daemon_reload: true
+
+- name: Create edcr market snapshot directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ edcr_eddn_listener_snapshot_dir }}"
+    state: directory
+    owner: "{{ edcr_eddn_listener_user }}"
+    group: "{{ edcr_eddn_listener_group }}"
+    mode: '0755'
+
+- name: Deploy edcr market snapshot units
+  become: true
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - edcr-market-snapshot.service
+    - edcr-market-snapshot.timer
+  register: edcr_eddn_listener_snapshot_units
+
+- name: Enable and start edcr market snapshot timer
+  become: true
+  ansible.builtin.systemd:
+    name: edcr-market-snapshot.timer
+    enabled: true
+    state: "{{ 'restarted' if edcr_eddn_listener_snapshot_units is changed else 'started' }}"
     daemon_reload: true

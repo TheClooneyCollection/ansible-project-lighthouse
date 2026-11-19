@@ -1,0 +1,11 @@
+# Managed by Ansible
+[Unit]
+Description=Write hourly EDControlRoom market snapshots
+
+[Timer]
+OnCalendar={{ edcr_eddn_listener_snapshot_schedule }}
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target
