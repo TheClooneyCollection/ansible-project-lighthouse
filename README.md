@@ -89,9 +89,12 @@ For the first snapshot, run `sudo systemctl start edcr-market-snapshot.service` 
 the host after deploying. No reboot is required.
 
 The `tailscale_serve_edcr_markets` tag can subsequently apply just directory serving.
-Its port is `edcr_eddn_listener_snapshot_https_port` (default 8443); choose an unused
+Its port is `edcr_eddn_listener_snapshot_https_port` (default 9443); choose an unused
 port distinct from Umami's 443. The new `tailscale-serve-edcr-markets` unit uses
 `tailscale serve --bg --https=<port> <snapshot_dir>` and stops only its own port.
+When migrating an existing snapshot Serve port, remove the old mapping explicitly
+with `sudo tailscale serve --https=<old-port> off` after verifying the new port;
+the updated unit stops only its newly configured port.
 The existing Umami unit stays in foreground mode with its existing settings.
 Tailscale must already be authenticated with HTTPS enabled. Directory targets are
 supported by [Tailscale Serve](https://tailscale.com/docs/reference/tailscale-cli/serve).

@@ -20,7 +20,7 @@
 17. [x] Implement `edcr_eddn_listener` role (EDControlRoom EDDN market listener as an enabled systemd service).
 18. [x] Implement `resolved` role (disable LLMNR and mDNS with a systemd-resolved drop-in; dedicated `resolved` tag).
 
-19. [x] Add hourly EDCR snapshots with retention and a separate tailnet-only directory Serve instance (default HTTPS 8443; dedicated `tailscale_serve_edcr_markets` tag).
+19. [x] Add hourly EDCR snapshots with retention and a separate tailnet-only directory Serve instance (default HTTPS 9443; dedicated `tailscale_serve_edcr_markets` tag).
 
 ## Plan Overview
 - Build an idempotent Ansible play that provisions a fresh Debian 13 droplet for the blog, proxy, and analytics stack, aligning with the documented migration plan while skipping any migration of existing data.

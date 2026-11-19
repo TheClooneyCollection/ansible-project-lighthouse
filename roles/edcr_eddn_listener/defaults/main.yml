@@ -33,4 +33,4 @@ edcr_eddn_listener_enabled: true
 edcr_eddn_listener_snapshot_dir: "{{ edcr_eddn_listener_state_dir }}/snapshots"
 edcr_eddn_listener_snapshot_keep: 3
 edcr_eddn_listener_snapshot_schedule: hourly
-edcr_eddn_listener_snapshot_https_port: 8443
+edcr_eddn_listener_snapshot_https_port: 9443
