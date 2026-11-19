@@ -1,0 +1,19 @@
+---
+- name: Ensure systemd-resolved drop-in directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Disable systemd-resolved multicast name resolution
+  become: true
+  ansible.builtin.template:
+    src: 90-disable-multicast.conf.j2
+    dest: /etc/systemd/resolved.conf.d/90-disable-multicast.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart systemd-resolved

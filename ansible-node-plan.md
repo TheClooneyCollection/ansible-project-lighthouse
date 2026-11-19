@@ -18,6 +18,7 @@
 15. [ ] Draft and publish running blog recap of the automation work.
 16. [x] Implement `tailscale_serve` role (Tailscale Serve systemd unit for Umami).
 17. [x] Implement `edcr_eddn_listener` role (EDControlRoom EDDN market listener as an enabled systemd service).
+18. [x] Implement `resolved` role (disable LLMNR and mDNS with a systemd-resolved drop-in; dedicated `resolved` tag).
 
 ## Plan Overview
 - Build an idempotent Ansible play that provisions a fresh Debian 13 droplet for the blog, proxy, and analytics stack, aligning with the documented migration plan while skipping any migration of existing data.
@@ -26,6 +27,7 @@
 - Assume Tailscale (or other remote access tooling) is pre-installed and connected manually before running this playbook.
 
 ## Role Breakdown
+- **`resolved`**: Disable LLMNR and MulticastDNS in `/etc/systemd/resolved.conf.d/90-disable-multicast.conf`; restart only `systemd-resolved` when the drop-in changes. Keep unicast DNS configuration unchanged. Run with `--tags resolved --limit debian_lighthouse` (preview with `--check --diff`).
 - **`initialize`**: Run apt upgrade, install required packages not already installed by `core` (`curl`, `wget`, `unzip`, `htop`, `ufw`, `docker.io`), enable Docker service.
 - **`firewall`**: Reset UFW state, allow 80/443, deny 22, enable firewall and verify status.
 - **`swapfile`**: Create/manage optional 1 GB swapfile controlled by variable.
