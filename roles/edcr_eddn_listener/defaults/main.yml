@@ -1,0 +1,29 @@
+---
+edcr_eddn_listener_service_name: edcr-eddn-listen
+edcr_eddn_listener_user: edcontrolroom
+edcr_eddn_listener_group: edcontrolroom
+edcr_eddn_listener_repo_url: https://github.com/TheClooneyCollection/EDControlRoom.git
+# Branch or tag to track; the checkout is fast-forwarded to it on every run
+edcr_eddn_listener_version: main
+edcr_eddn_listener_checkout: /opt/edcontrolroom
+# Stable path: the hub reads this database over Tailscale later
+edcr_eddn_listener_state_dir: /var/lib/edcontrolroom
+edcr_eddn_listener_db: "{{ edcr_eddn_listener_state_dir }}/markets.sqlite3"
+# The venv lives in the state dir so the checkout stays root-owned and read-only
+edcr_eddn_listener_venv: "{{ edcr_eddn_listener_state_dir }}/venv"
+edcr_eddn_listener_packages:
+  - ca-certificates
+  - curl
+  - git
+
+edcr_eddn_listener_uv_version: "0.9.0"
+edcr_eddn_listener_uv_bin: /usr/local/bin/uv
+edcr_eddn_listener_uv_arch_map:
+  x86_64: x86_64
+  aarch64: aarch64
+edcr_eddn_listener_uv_arch: "{{ edcr_eddn_listener_uv_arch_map[ansible_facts['architecture']] }}"
+edcr_eddn_listener_uv_url: >-
+  https://github.com/astral-sh/uv/releases/download/{{ edcr_eddn_listener_uv_version }}/uv-{{ edcr_eddn_listener_uv_arch }}-unknown-linux-gnu.tar.gz
+
+edcr_eddn_listener_state: started
+edcr_eddn_listener_enabled: true

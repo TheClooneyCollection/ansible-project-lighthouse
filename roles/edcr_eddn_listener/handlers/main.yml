@@ -1,0 +1,7 @@
+---
+- name: Restart edcr eddn listener
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ edcr_eddn_listener_service_name }}"
+    state: restarted
+    daemon_reload: true

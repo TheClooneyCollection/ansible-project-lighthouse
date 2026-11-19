@@ -17,6 +17,7 @@
 14. [x] Add ansible-lint configuration and document lint workflow.
 15. [ ] Draft and publish running blog recap of the automation work.
 16. [x] Implement `tailscale_serve` role (Tailscale Serve systemd unit for Umami).
+17. [x] Implement `edcr_eddn_listener` role (EDControlRoom EDDN market listener as an enabled systemd service).
 
 ## Plan Overview
 - Build an idempotent Ansible play that provisions a fresh Debian 13 droplet for the blog, proxy, and analytics stack, aligning with the documented migration plan while skipping any migration of existing data.
@@ -36,6 +37,7 @@
 - **`docker_umami`**: Prepare `/opt/umami`, template `.env`, `docker-compose.yml`, optional `postgres.conf`, ensure compose stack running.
 - **`umami_nginx`**: Provide analytics nginx site with restricted dashboard access (configurable subnet/IP allowlist) and public tracking endpoints, enable site, reload service.
 - **`tailscale_serve`**: Deploy and manage a dedicated Tailscale Serve systemd unit that proxies HTTPS traffic to the local Umami instance.
+- **`edcr_eddn_listener`**: Install uv, check out EDControlRoom to `/opt/edcontrolroom`, `uv sync --frozen --no-dev` into `/var/lib/edcontrolroom/venv` as the `edcontrolroom` user, and run `tools/eddn_listen.py` as an enabled, restart-on-failure unit writing `/var/lib/edcontrolroom/markets.sqlite3`.
 - **`backups`**: Deploy Postgres dump script and cron job cleaning old backups.
 
 ## Main Playbook Flow

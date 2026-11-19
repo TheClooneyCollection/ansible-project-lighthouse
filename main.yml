@@ -34,6 +34,8 @@
         umami_listen_port: 3000
     - role: tailscale_serve
       tags: [tailscale_serve]
+    - role: edcr_eddn_listener
+      tags: [edcr_eddn_listener]
 
     # Run this manually
     # - ssh_hardening

@@ -1,0 +1,26 @@
+# Managed by Ansible
+[Unit]
+Description=EDControlRoom EDDN-only market listener
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ edcr_eddn_listener_user }}
+Group={{ edcr_eddn_listener_group }}
+WorkingDirectory={{ edcr_eddn_listener_checkout }}
+StateDirectory=edcontrolroom
+StateDirectoryMode=0755
+Environment=PYTHONUNBUFFERED=1
+Environment=HOME={{ edcr_eddn_listener_state_dir }}
+Environment=UV_PROJECT_ENVIRONMENT={{ edcr_eddn_listener_venv }}
+ExecStart={{ edcr_eddn_listener_uv_bin }} run --no-sync python3 tools/eddn_listen.py --db {{ edcr_eddn_listener_db }}
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

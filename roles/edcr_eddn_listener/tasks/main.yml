@@ -1,0 +1,98 @@
+---
+- name: Install edcr eddn listener prerequisites
+  become: true
+  ansible.builtin.apt:
+    name: "{{ edcr_eddn_listener_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create edcr eddn listener group
+  become: true
+  ansible.builtin.group:
+    name: "{{ edcr_eddn_listener_group }}"
+    system: true
+
+- name: Create edcr eddn listener user
+  become: true
+  ansible.builtin.user:
+    name: "{{ edcr_eddn_listener_user }}"
+    group: "{{ edcr_eddn_listener_group }}"
+    system: true
+    home: "{{ edcr_eddn_listener_state_dir }}"
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: Create edcr eddn listener state directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ edcr_eddn_listener_state_dir }}"
+    state: directory
+    owner: "{{ edcr_eddn_listener_user }}"
+    group: "{{ edcr_eddn_listener_group }}"
+    mode: '0755'
+
+- name: Download uv
+  become: true
+  ansible.builtin.unarchive:
+    src: "{{ edcr_eddn_listener_uv_url }}"
+    dest: /usr/local/bin
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: "{{ edcr_eddn_listener_uv_bin }}"
+
+- name: Check out EDControlRoom
+  become: true
+  ansible.builtin.git:
+    repo: "{{ edcr_eddn_listener_repo_url }}"
+    dest: "{{ edcr_eddn_listener_checkout }}"
+    version: "{{ edcr_eddn_listener_version }}"
+  register: edcr_eddn_listener_checkout_result
+  notify: Restart edcr eddn listener
+
+- name: Deploy empty config.toml
+  become: true
+  ansible.builtin.template:
+    src: config.toml.j2
+    dest: "{{ edcr_eddn_listener_checkout }}/config.toml"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Check for the listener virtualenv
+  ansible.builtin.stat:
+    path: "{{ edcr_eddn_listener_venv }}/bin/python"
+  register: edcr_eddn_listener_venv_stat
+
+- name: Install listener dependencies as the service user
+  become: true
+  ansible.builtin.command:
+    cmd: >-
+      runuser -u {{ edcr_eddn_listener_user }} --
+      env HOME={{ edcr_eddn_listener_state_dir }}
+      UV_PROJECT_ENVIRONMENT={{ edcr_eddn_listener_venv }}
+      {{ edcr_eddn_listener_uv_bin }} sync --frozen --no-dev
+    chdir: "{{ edcr_eddn_listener_checkout }}"
+  when:
+    - not ansible_check_mode
+    - edcr_eddn_listener_checkout_result is changed or not edcr_eddn_listener_venv_stat.stat.exists
+  changed_when: true
+  notify: Restart edcr eddn listener
+
+- name: Deploy edcr eddn listener systemd unit
+  become: true
+  ansible.builtin.template:
+    src: edcr-eddn-listen.service.j2
+    dest: "/etc/systemd/system/{{ edcr_eddn_listener_service_name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart edcr eddn listener
+
+- name: Ensure edcr eddn listener is enabled and {{ edcr_eddn_listener_state }}
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ edcr_eddn_listener_service_name }}"
+    enabled: "{{ edcr_eddn_listener_enabled }}"
+    state: "{{ edcr_eddn_listener_state }}"
+    daemon_reload: true
